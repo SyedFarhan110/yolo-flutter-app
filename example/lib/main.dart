@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:ultralytics_yolo_example/presentation/screens/camera_inference_screen.dart';
 import 'package:ultralytics_yolo_example/presentation/screens/single_image_screen.dart';
+import 'package:ultralytics_yolo_example/presentation/screens/tracking_screen.dart';
 
 void main() {
   runApp(const YOLOExampleApp());
@@ -21,6 +22,7 @@ class YOLOExampleApp extends StatelessWidget {
       routes: {
         '/': (_) => const CameraInferenceScreen(),
         '/single': (_) => const SingleImageScreen(),
+        '/tracking': (_) => const TrackingScreen(), // add this
       },
     );
   }

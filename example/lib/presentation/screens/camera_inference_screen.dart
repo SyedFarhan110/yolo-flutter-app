@@ -8,11 +8,16 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:ultralytics_yolo/ultralytics_yolo.dart';
+import 'package:byte_track_dart/byte_track_dart.dart';
 
-/// Real-time YOLO camera inference. Thin shell over [YOLOShowcase] that wires the capture callback to the platform
-/// share sheet via `share_plus` and stamps the live app version in the bottom-left (matching `yolo-ios-app`). Kept
-/// intentionally bare so the screen reads side-by-side with `yolo-ios-app`'s `ViewController` — no extra Material
-/// chrome on top.
+/// Real-time YOLO camera inference with multi-object tracking via [ByteTracker].
+///
+/// NOTE: This replaces the original [YOLOShowcase]-based screen with a bare [YOLOView]
+/// because [YOLOShowcase] doesn't expose `onResult`/`controller`, which the tracker needs
+/// to see per-frame detections. As a result this screen is Detect-only — the 6-task
+/// switcher (Seg/Sem/Cls/Pose/OBB) and model-size picker that [YOLOShowcase] provided
+/// are not reproduced here. If you need those back, they'd need to be rebuilt manually
+/// or this screen should stay separate from a `YOLOShowcase`-based one.
 class CameraInferenceScreen extends StatefulWidget {
   const CameraInferenceScreen({super.key});
 
@@ -22,6 +27,12 @@ class CameraInferenceScreen extends StatefulWidget {
 
 class _CameraInferenceScreenState extends State<CameraInferenceScreen> {
   String? _versionLabel;
+
+  // One tracker instance for the whole session — holds state across frames.
+  final ByteTracker _tracker = ByteTracker();
+  final YOLOViewController _controller = YOLOViewController();
+  List<Track> _tracks = [];
+  bool _overlaysHidden = false;
 
   @override
   void initState() {
@@ -34,6 +45,30 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> {
     if (!mounted) return;
     // Match yolo-ios-app's `labelVersion`: "v<version> (<build>)".
     setState(() => _versionLabel = 'v${info.version} (${info.buildNumber})');
+  }
+
+  void _onResult(List<YOLOResult> results) {
+    if (!_overlaysHidden) {
+      _controller.setShowOverlays(false);
+      _overlaysHidden = true;
+    }
+
+    final detections = results
+        .map(
+          (r) => Detection.xyxy(
+            x1: r.boundingBox.left,
+            y1: r.boundingBox.top,
+            x2: r.boundingBox.right,
+            y2: r.boundingBox.bottom,
+            score: r.confidence,
+            classId: r.classIndex,
+          ),
+        )
+        .toList();
+
+    final tracks = _tracker.update(detections);
+    if (!mounted) return;
+    setState(() => _tracks = tracks);
   }
 
   Future<void> _onCapture(Uint8List bytes) async {
@@ -59,9 +94,80 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Show all 6 tasks (Detect / Segment / Semantic / Classify / Pose / OBB) to match the iOS app's task control.
     return Scaffold(
-      body: YOLOShowcase(versionLabel: _versionLabel, onCapture: _onCapture),
+      body: Stack(
+        children: [
+          YOLOView(
+            modelPath: 'yolo26n',
+            task: YOLOTask.detect,
+            controller: _controller,
+            onResult: _onResult,
+          ),
+          Positioned.fill(child: CustomPaint(painter: _TrackPainter(_tracks))),
+          if (_versionLabel != null)
+            Positioned(
+              left: 12,
+              bottom: 12,
+              child: Text(
+                _versionLabel!,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ),
+          Positioned(
+            right: 12,
+            bottom: 12,
+            child: FloatingActionButton(
+              mini: true,
+              onPressed: () async {
+                // If you want the actual camera frame here instead of a placeholder,
+                // wire this up through streamingConfig's includeOriginalImage and
+                // capture the bytes from onStreamingData instead.
+                final placeholder = Uint8List(0);
+                await _onCapture(placeholder);
+              },
+              child: const Icon(Icons.ios_share),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _TrackPainter extends CustomPainter {
+  final List<Track> tracks;
+  _TrackPainter(this.tracks);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final boxPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..color = Colors.greenAccent;
+
+    final labelStyle = const TextStyle(
+      color: Colors.greenAccent,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    );
+
+    for (final t in tracks) {
+      final rect = Rect.fromLTRB(t.bbox.x1, t.bbox.y1, t.bbox.x2, t.bbox.y2);
+      canvas.drawRect(rect, boxPaint);
+
+      final tp = TextPainter(
+        text: TextSpan(text: 'ID ${t.id}', style: labelStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      final labelOffset = Offset(
+        rect.left,
+        (rect.top - tp.height - 2).clamp(0, size.height).toDouble(),
+      );
+      tp.paint(canvas, labelOffset);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrackPainter oldDelegate) => true;
 }

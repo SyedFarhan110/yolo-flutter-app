@@ -1,0 +1,23 @@
+name: byte_track_dart
+description: >
+  A pure-Dart, detector-agnostic multi-object tracker based on the
+  ByteTrack/SORT family of algorithms (Kalman filter + Hungarian
+  assignment). Feed it bounding boxes from any YOLO model (or any
+  detector at all) and get back stable object IDs across frames.
+version: 0.1.0
+homepage: https://github.com/your-username/byte_track_dart
+repository: https://github.com/your-username/byte_track_dart
+issue_tracker: https://github.com/your-username/byte_track_dart/issues
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+# Intentionally zero third-party dependencies: the tracker (Kalman filter,
+# Hungarian algorithm, IoU matching) is implemented from scratch so this
+# package works in plain Dart, Flutter mobile, web, and server contexts
+# without pulling in a native/ffi dependency chain.
+dependencies:
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0

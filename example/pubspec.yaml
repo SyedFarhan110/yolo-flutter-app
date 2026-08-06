@@ -20,6 +20,8 @@ dependencies:
   # Xcode 26.5 ("'Flutter/Flutter.h' file not found", "double-quoted include in framework header"). Revisit once the
   # upstream package re-publishes with a compatible module map.
   share_plus: ^12.0.0
+  byte_track_dart:
+    path: ../byte_track_dart
   ultralytics_yolo:
     path: ../
 
