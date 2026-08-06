@@ -12,8 +12,8 @@ class Matrix {
   final int cols;
 
   Matrix(this.data)
-      : rows = data.length,
-        cols = data.isEmpty ? 0 : data[0].length;
+    : rows = data.length,
+      cols = data.isEmpty ? 0 : data[0].length;
 
   factory Matrix.zeros(int rows, int cols) =>
       Matrix(List.generate(rows, (_) => List<double>.filled(cols, 0.0)));
@@ -30,15 +30,19 @@ class Matrix {
   factory Matrix.column(List<double> values) =>
       Matrix(values.map((v) => [v]).toList());
 
-  Matrix operator +(Matrix other) => Matrix(List.generate(
-        rows,
-        (i) => List.generate(cols, (j) => data[i][j] + other.data[i][j]),
-      ));
+  Matrix operator +(Matrix other) => Matrix(
+    List.generate(
+      rows,
+      (i) => List.generate(cols, (j) => data[i][j] + other.data[i][j]),
+    ),
+  );
 
-  Matrix operator -(Matrix other) => Matrix(List.generate(
-        rows,
-        (i) => List.generate(cols, (j) => data[i][j] - other.data[i][j]),
-      ));
+  Matrix operator -(Matrix other) => Matrix(
+    List.generate(
+      rows,
+      (i) => List.generate(cols, (j) => data[i][j] - other.data[i][j]),
+    ),
+  );
 
   Matrix operator *(Matrix other) {
     assert(
@@ -58,10 +62,9 @@ class Matrix {
     return result;
   }
 
-  Matrix transpose() => Matrix(List.generate(
-        cols,
-        (i) => List.generate(rows, (j) => data[j][i]),
-      ));
+  Matrix transpose() => Matrix(
+    List.generate(cols, (i) => List.generate(rows, (j) => data[j][i])),
+  );
 
   Matrix scale(double s) =>
       Matrix(data.map((row) => row.map((v) => v * s).toList()).toList());
