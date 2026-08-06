@@ -32,9 +32,11 @@ class Track {
   final KalmanFilter _kf;
 
   Track({required this.id, required Detection detection})
-      : classId = detection.classId,
-        score = detection.score,
-        _kf = KalmanFilter(initialMeasurement: measurementFromBBox(detection.bbox)) {
+    : classId = detection.classId,
+      score = detection.score,
+      _kf = KalmanFilter(
+        initialMeasurement: measurementFromBBox(detection.bbox),
+      ) {
     hits = 1;
   }
 
@@ -59,6 +61,5 @@ class Track {
   }
 
   @override
-  String toString() =>
-      'Track(id: $id, cls: $classId, state: $state, $bbox)';
+  String toString() => 'Track(id: $id, cls: $classId, state: $state, $bbox)';
 }

@@ -22,7 +22,11 @@ void main() {
         final tracks = tracker.update([box(100.0 + i * 5, 200.0)]);
         expect(tracks.length, 1);
         id ??= tracks.first.id;
-        expect(tracks.first.id, id, reason: 'id should not change frame-to-frame');
+        expect(
+          tracks.first.id,
+          id,
+          reason: 'id should not change frame-to-frame',
+        );
       }
     });
 
@@ -44,7 +48,11 @@ void main() {
       // dropped or reassigned a new id -- second-pass recovery should
       // keep matching it to the existing track.
       final recovered = tracker.update([box(102, 200, score: 0.15)]);
-      expect(recovered.length, 1, reason: 'low-score box should still count as a match');
+      expect(
+        recovered.length,
+        1,
+        reason: 'low-score box should still count as a match',
+      );
       expect(recovered.first.id, firstId);
     });
 
@@ -61,14 +69,17 @@ void main() {
       expect(tracker.allTracks, isEmpty);
     });
 
-    test('a tentative track needs minHits consecutive matches to be confirmed', () {
-      final tracker = ByteTracker(minHits: 3);
+    test(
+      'a tentative track needs minHits consecutive matches to be confirmed',
+      () {
+        final tracker = ByteTracker(minHits: 3);
 
-      expect(tracker.update([box(100, 200)]), isEmpty); // hit 1
-      expect(tracker.update([box(102, 200)]), isEmpty); // hit 2
-      final confirmed = tracker.update([box(104, 200)]); // hit 3
-      expect(confirmed.length, 1);
-    });
+        expect(tracker.update([box(100, 200)]), isEmpty); // hit 1
+        expect(tracker.update([box(102, 200)]), isEmpty); // hit 2
+        final confirmed = tracker.update([box(104, 200)]); // hit 3
+        expect(confirmed.length, 1);
+      },
+    );
 
     test('reset clears all tracks and restarts id numbering', () {
       final tracker = ByteTracker(minHits: 1);
@@ -77,7 +88,11 @@ void main() {
       tracker.reset();
       final afterReset = tracker.update([box(100, 200)]).first.id;
 
-      expect(afterReset, firstId, reason: 'ids should restart from the same seed after reset');
+      expect(
+        afterReset,
+        firstId,
+        reason: 'ids should restart from the same seed after reset',
+      );
     });
   });
 
