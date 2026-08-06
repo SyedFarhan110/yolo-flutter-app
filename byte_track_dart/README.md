@@ -11,7 +11,7 @@ it runs the same way on Flutter mobile, Flutter web, and server-side Dart.
 
 ## Why
 
-Object detectors tell you *what* and *where*, frame by frame, with no
+Object detectors tell you _what_ and _where_, frame by frame, with no
 memory between frames. Object **tracking** is what turns "a person" in
 frame 1 and "a person" in frame 2 into "the same person, ID #7." This
 package implements that layer:
@@ -104,21 +104,21 @@ anything.
 
 ## Tuning
 
-| Parameter | Default | What it does |
-|---|---|---|
-| `highThresh` | `0.6` | Score cutoff for first-pass (high-confidence) matching |
-| `lowThresh` | `0.1` | Score floor for second-pass recovery matching |
-| `newTrackThresh` | `0.7` | Minimum score for an unmatched detection to spawn a new track |
-| `matchThresh` | `0.3` | Minimum IoU for a first-pass match |
-| `secondPassMatchThresh` | `0.5` | Minimum IoU for a second-pass (recovery) match |
-| `maxAge` | `30` | Frames a track can go unmatched before being dropped |
-| `minHits` | `3` | Consecutive matches before a new track is reported |
+| Parameter               | Default | What it does                                                  |
+| ----------------------- | ------- | ------------------------------------------------------------- |
+| `highThresh`            | `0.6`   | Score cutoff for first-pass (high-confidence) matching        |
+| `lowThresh`             | `0.1`   | Score floor for second-pass recovery matching                 |
+| `newTrackThresh`        | `0.7`   | Minimum score for an unmatched detection to spawn a new track |
+| `matchThresh`           | `0.3`   | Minimum IoU for a first-pass match                            |
+| `secondPassMatchThresh` | `0.5`   | Minimum IoU for a second-pass (recovery) match                |
+| `maxAge`                | `30`    | Frames a track can go unmatched before being dropped          |
+| `minHits`               | `3`     | Consecutive matches before a new track is reported            |
 
 Start from the defaults and adjust `maxAge`/`minHits` for your frame rate —
 at 30fps, `maxAge: 30` tolerates about a second of occlusion; scale that
 down for lower frame rates or fast-moving cameras.
 
-## What this package does *not* do
+## What this package does _not_ do
 
 - Run inference — bring your own detector/runtime
 - Re-identification via appearance embeddings (that's DeepSORT-style

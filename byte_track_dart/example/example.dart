@@ -19,7 +19,9 @@ void main() {
 
     print('--- frame $frame ---');
     for (final t in tracks) {
-      print('  id=${t.id} class=${t.classId} score=${t.score.toStringAsFixed(2)} box=${t.bbox}');
+      print(
+        '  id=${t.id} class=${t.classId} score=${t.score.toStringAsFixed(2)} box=${t.bbox}',
+      );
     }
   }
 }
