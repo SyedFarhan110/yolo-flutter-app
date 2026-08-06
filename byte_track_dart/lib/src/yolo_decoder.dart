@@ -81,14 +81,16 @@ class YoloDecoder {
       final origW = w / scaleX;
       final origH = h / scaleY;
 
-      candidates.add(Detection.xywh(
-        cx: origCx,
-        cy: origCy,
-        width: origW,
-        height: origH,
-        score: bestScore,
-        classId: bestClass,
-      ));
+      candidates.add(
+        Detection.xywh(
+          cx: origCx,
+          cy: origCy,
+          width: origW,
+          height: origH,
+          score: bestScore,
+          classId: bestClass,
+        ),
+      );
     }
 
     return _nonMaxSuppression(candidates, iouThreshold);
