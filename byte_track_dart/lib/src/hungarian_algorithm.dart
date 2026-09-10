@@ -33,7 +33,8 @@ class HungarianAlgorithm {
     // simple to verify against reference implementations).
     final u = List<double>.filled(n + 1, 0.0);
     final v = List<double>.filled(n + 1, 0.0);
-    final p = List<int>.filled(n + 1, 0); // p[j] = row currently assigned to column j
+    final p =
+        List<int>.filled(n + 1, 0); // p[j] = row currently assigned to column j
     final way = List<int>.filled(n + 1, 0);
 
     for (var i = 1; i <= n; i++) {

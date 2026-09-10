@@ -93,75 +93,70 @@ Future<void> _bench(
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets(
-    'QNN models run on the NPU for all six tasks',
-    (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        final image = await _download('https://ultralytics.com/images/bus.jpg');
+  testWidgets('QNN models run on the NPU for all six tasks', (
+    WidgetTester tester,
+  ) async {
+    await tester.runAsync(() async {
+      final image = await _download('https://ultralytics.com/images/bus.jpg');
 
-        for (final entry in _tasks.entries) {
-          final (id, task) = entry.value;
-          final results = await _predictOnce(
-            '$_releaseBase/${id}_v73_qnn.onnx',
-            task,
-            image,
-          );
-          final detections =
-              (results['detections'] as List?)?.cast<Map>() ?? [];
-          final classes = detections.map((d) => d['className']).toSet();
-          // ignore: avoid_print
-          print(
-            'QNN ${entry.key}: ${detections.length} detections classes=$classes '
-            'keys=${results.keys.toList()} '
-            'pre=${results['preMs']} infer=${results['inferenceMs']} post=${results['postMs']}',
-          );
-          switch (entry.key) {
-            case 'detect' || 'segment':
-              expect(classes, containsAll(['bus', 'person']));
-            case 'pose':
-              expect(detections, isNotEmpty);
-            case 'classify':
-              expect(results.containsKey('detections'), isTrue);
-            case 'semantic':
-              expect(results.containsKey('semanticMask'), isTrue);
-            case 'obb':
-              // DOTA aerial classes won't fire on bus.jpg; a clean run is the assertion
-              expect(results, isA<Map<String, dynamic>>());
-          }
-        }
-      });
-    },
-    timeout: const Timeout(Duration(minutes: 15)),
-  );
-
-  testWidgets(
-    'soak: sustained inference does not exhaust memory',
-    (WidgetTester tester) async {
-      if (!_runSoak || !Platform.isAndroid) {
-        return;
-      }
-      await tester.runAsync(() async {
-        final image = await _download('https://ultralytics.com/images/bus.jpg');
-        // Worst case: semantic logits are the largest output tensors in the model zoo.
-        final yolo = YOLO(
-          modelPath: '$_releaseBase/yolo26n-sem_v73_qnn.onnx',
-          task: YOLOTask.semantic,
+      for (final entry in _tasks.entries) {
+        final (id, task) = entry.value;
+        final results = await _predictOnce(
+          '$_releaseBase/${id}_v73_qnn.onnx',
+          task,
+          image,
         );
-        expect(await yolo.loadModel(), isTrue);
-        for (var i = 0; i < 150; i++) {
-          await yolo.predict(image);
-          if (i % 25 == 0) {
-            // ignore: avoid_print
-            print('SOAK|$i');
-          }
-        }
-        await yolo.dispose();
+        final detections = (results['detections'] as List?)?.cast<Map>() ?? [];
+        final classes = detections.map((d) => d['className']).toSet();
         // ignore: avoid_print
-        print('SOAK|done');
-      });
-    },
-    timeout: const Timeout(Duration(minutes: 30)),
-  );
+        print(
+          'QNN ${entry.key}: ${detections.length} detections classes=$classes '
+          'keys=${results.keys.toList()} '
+          'pre=${results['preMs']} infer=${results['inferenceMs']} post=${results['postMs']}',
+        );
+        switch (entry.key) {
+          case 'detect' || 'segment':
+            expect(classes, containsAll(['bus', 'person']));
+          case 'pose':
+            expect(detections, isNotEmpty);
+          case 'classify':
+            expect(results.containsKey('detections'), isTrue);
+          case 'semantic':
+            expect(results.containsKey('semanticMask'), isTrue);
+          case 'obb':
+            // DOTA aerial classes won't fire on bus.jpg; a clean run is the assertion
+            expect(results, isA<Map<String, dynamic>>());
+        }
+      }
+    });
+  }, timeout: const Timeout(Duration(minutes: 15)));
+
+  testWidgets('soak: sustained inference does not exhaust memory', (
+    WidgetTester tester,
+  ) async {
+    if (!_runSoak || !Platform.isAndroid) {
+      return;
+    }
+    await tester.runAsync(() async {
+      final image = await _download('https://ultralytics.com/images/bus.jpg');
+      // Worst case: semantic logits are the largest output tensors in the model zoo.
+      final yolo = YOLO(
+        modelPath: '$_releaseBase/yolo26n-sem_v73_qnn.onnx',
+        task: YOLOTask.semantic,
+      );
+      expect(await yolo.loadModel(), isTrue);
+      for (var i = 0; i < 150; i++) {
+        await yolo.predict(image);
+        if (i % 25 == 0) {
+          // ignore: avoid_print
+          print('SOAK|$i');
+        }
+      }
+      await yolo.dispose();
+      // ignore: avoid_print
+      print('SOAK|done');
+    });
+  }, timeout: const Timeout(Duration(minutes: 30)));
 
   testWidgets('benchmark CPU vs GPU vs QNN', (WidgetTester tester) async {
     if (!_runBench) {
