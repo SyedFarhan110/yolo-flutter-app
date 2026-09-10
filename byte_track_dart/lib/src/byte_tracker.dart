@@ -111,8 +111,10 @@ class ByteTracker {
     }
 
     // --- Second pass: low-confidence detections vs. tracks still unmatched ---
-    final remainingTracks = firstPass.unmatchedTracks.map((i) => _tracks[i]).toList();
-    final secondPass = _associate(remainingTracks, lowDets, secondPassMatchThresh);
+    final remainingTracks =
+        firstPass.unmatchedTracks.map((i) => _tracks[i]).toList();
+    final secondPass =
+        _associate(remainingTracks, lowDets, secondPassMatchThresh);
     for (final pair in secondPass.matches) {
       remainingTracks[pair[0]].update(lowDets[pair[1]]);
     }
